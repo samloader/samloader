@@ -2,8 +2,11 @@
 Download firmware for Samsung devices (without any extra Windows drivers).
 ## Usage
 `checkupdate [model] [region]`: Check the latest firmware version
+
 `download [version] [model] [region] [outfile]`: Download the specified firmware version for a given phone and region
+
 `decrypt2 [version] [model] [region] [infile] [outfile]`: Decrypt enc2 encrypted firmwares
+
 `decrypt4 [version] [model] [region] [infile] [outfile]`: Decrypt enc4 encrypted firmwares (requires network connection)
 ### Example
 ```
