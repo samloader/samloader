@@ -11,7 +11,8 @@ def getlatestver(region, model):
     root = ET.fromstring(r.text)
     vercode = root.find("./firmware/version/latest").text
     vc = vercode.split("/")
-    if len(vc) == 4:
-        return vercode
-    else:
-        return vercode + "/" + vc[0]
+    if len(vc) == 3:
+        vc.append(vc[0])
+    if vc[2] == "":
+        vc[2] = vc[0]
+    return "/".join(vc)
