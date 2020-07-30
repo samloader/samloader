@@ -38,15 +38,17 @@ def checkupdate(model, region):
 @click.argument("version")
 @click.argument("model")
 @click.argument("region")
-@click.argument("outfile")
-def download(version, model, region, outfile):
+@click.argument("out")
+def download(version, model, region, out):
     client = fusclient.FUSClient()
     path, filename = getbinaryfile(client, version, region, model)
     print("Downloading file {} ...".format(path+filename))
     initdownload(client, filename)
     r = client.downloadfile(path+filename)
     length = int(r.headers["Content-Length"])
-    with open(outfile, "wb") as f:
+    if os.path.isdir(out):
+        out = os.path.join(out, filename)
+    with open(out, "wb") as f:
         for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(length/0x10000)+1):
             if chunk:
                 f.write(chunk)
