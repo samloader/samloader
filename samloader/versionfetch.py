@@ -8,6 +8,7 @@ import requests
 
 def getlatestver(region, model):
     r = requests.get("http://fota-cloud-dn.ospserver.net/firmware/" + region + "/" + model + "/version.xml")
+    r.raise_for_status()
     root = ET.fromstring(r.text)
     vercode = root.find("./firmware/version/latest").text
     vc = vercode.split("/")
