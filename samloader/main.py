@@ -3,6 +3,7 @@
 
 import click
 import os
+import base64
 import xml.etree.ElementTree as ET
 from clint.textui import progress
 
@@ -57,8 +58,10 @@ def download(version, model, region, out):
     print("{} file {}".format(txt,path+filename))
     r = client.downloadfile(path+filename,start)
     length = int(r.headers["Content-Length"])
-    if start is not None:
-        length -= start
+    md5 = r.headers.get("Content-MD5", None)
+    if md5 is not None:
+        md5 = base64.b64decode(md5)
+        print("Expected MD5: {}".format(md5.hex()))
     for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(length/0x10000)+1):
         if chunk:
             f.write(chunk)
