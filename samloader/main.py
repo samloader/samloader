@@ -46,22 +46,19 @@ def download(version, model, region, out):
     initdownload(client, filename)
     if os.path.isdir(out):
         out = os.path.join(out, filename)
-        txt = "Downloading"
-    if os.path.isfile(out):
+    if os.path.exists(out):
         f = open(out, "ab")
-        f.seek(0, 2)
-        start = f.tell()
-        txt = "Resuming download of" 
+        start = os.stat(out).st_size
+        print("Resuming {} at {}".format(path+filename, start))
     else:
         f = open(out, "wb")
-        start = None
-    print("{} file {}".format(txt,path+filename))
-    r = client.downloadfile(path+filename,start)
+        start = 0
+        print("Downloading {}".format(path+filename))
+    r = client.downloadfile(path+filename, start)
     length = int(r.headers["Content-Length"])
-    md5 = r.headers.get("Content-MD5", None)
-    if md5 is not None:
-        md5 = base64.b64decode(md5)
-        print("Expected MD5: {}".format(md5.hex()))
+    if "Content-MD5" in r.headers:
+        md5 = base64.b64decode(r.headers["Content-MD5"]).hex()
+        print("MD5: {}".format(md5))
     for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(length/0x10000)+1):
         if chunk:
             f.write(chunk)
