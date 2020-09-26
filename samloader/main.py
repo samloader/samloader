@@ -3,6 +3,7 @@
 
 import click
 import os
+import base64
 import xml.etree.ElementTree as ET
 from clint.textui import progress
 
@@ -42,17 +43,27 @@ def checkupdate(model, region):
 def download(version, model, region, out):
     client = fusclient.FUSClient()
     path, filename = getbinaryfile(client, version, region, model)
-    print("Downloading file {} ...".format(path+filename))
     initdownload(client, filename)
-    r = client.downloadfile(path+filename)
-    length = int(r.headers["Content-Length"])
     if os.path.isdir(out):
         out = os.path.join(out, filename)
-    with open(out, "wb") as f:
-        for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(length/0x10000)+1):
-            if chunk:
-                f.write(chunk)
-                f.flush()
+    if os.path.exists(out):
+        f = open(out, "ab")
+        start = os.stat(out).st_size
+        print("Resuming {} at {}".format(path+filename, start))
+    else:
+        f = open(out, "wb")
+        start = 0
+        print("Downloading {}".format(path+filename))
+    r = client.downloadfile(path+filename, start)
+    length = int(r.headers["Content-Length"])
+    if "Content-MD5" in r.headers:
+        md5 = base64.b64decode(r.headers["Content-MD5"]).hex()
+        print("MD5: {}".format(md5))
+    for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(length/0x10000)+1):
+        if chunk:
+            f.write(chunk)
+            f.flush()
+    f.close()
     print("Done!")
 
 @cli.command(help="Decrypt enc4 files.")

@@ -24,9 +24,12 @@ class FUSClient(object):
             self.sessid = r.cookies["JSESSIONID"]
         r.raise_for_status()
         return r.text
-    def downloadfile(self, filename):
+    def downloadfile(self, filename, start=0):
         authv = 'FUS nonce="' + self.encnonce + '", signature="' + self.auth + '", nc="", type="", realm="", newauth="1"'
+        headers = {"Authorization": authv}
+        if start > 0:
+            headers["Range"] = "bytes={}-".format(start)
         r = requests.get("https://cloud-neofussvr.sslcs.cdngc.net/NF_DownloadBinaryForMass.do",
-            params={"file": filename}, headers={"Authorization": authv}, stream=True)
+            params={"file": filename}, headers=headers, stream=True)
         r.raise_for_status()
         return r
