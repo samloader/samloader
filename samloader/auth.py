@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0+
-# Copyright (C) 2020 Nayil Mukhametshin
+# Copyright (C) 2020 nlscc
 
 # FUS authentication functions (decrypting nonce, calculating auth token)
 
