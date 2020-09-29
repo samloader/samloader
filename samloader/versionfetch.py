@@ -11,6 +11,8 @@ def getlatestver(region, model):
     r.raise_for_status()
     root = ET.fromstring(r.text)
     vercode = root.find("./firmware/version/latest").text
+    if vercode is None:
+        raise Exception("No latest firmware found")
     vc = vercode.split("/")
     if len(vc) == 3:
         vc.append(vc[0])
