@@ -16,7 +16,7 @@ def getbinaryfile(client, fw, region, model):
     req = request.binaryinform(fw, region, model, client.nonce)
     resp = client.makereq("NF_DownloadBinaryInform.do", req)
     root = ET.fromstring(resp)
-    status = root.find("./FUSBody/Results/Status").text
+    status = int(root.find("./FUSBody/Results/Status").text)
     if status != 200:
         raise Exception("DownloadBinaryInform returned {}, firmware could not be found?".format(status))
     filename = root.find("./FUSBody/Put/BINARY_NAME/Data").text
