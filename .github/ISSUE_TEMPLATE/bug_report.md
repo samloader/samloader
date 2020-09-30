@@ -8,10 +8,10 @@ about: Create a bug report
 <!-- Add a description of the bug -->
 
 ## Reproduction Steps
-<!-- Add a set of steps to reproduce the bug (what commands you ran, etc.) -->
-1.
-2.
-3.
+<!-- Add a list of commands that you ran that triggered the bug -->
+
+## Output
+<!-- Add the full output of these commands or any logs, showing any errors -->
 
 ## Environment
-<!-- Include your OS version, Python version, and any other relevant details. -->
+<!-- Include your environment (OS version, Python version, etc.) -->
