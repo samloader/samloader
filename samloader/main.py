@@ -44,6 +44,9 @@ def checkupdate(model, region):
 @click.argument("region")
 @click.argument("out", nargs = -1)
 def download(version, model, region, out):
+    download_function(version, model, region, out)
+
+def download_function(version, model, region, out):
     client = fusclient.FUSClient()
     path, filename = getbinaryfile(client, version, region, model)
     initdownload(client, filename)
@@ -70,6 +73,7 @@ def download(version, model, region, out):
             f.flush()
     f.close()
     print("Done!")
+    return out
 
 @cli.command(help="Decrypt enc4 files.")
 @click.argument("version")
@@ -78,6 +82,9 @@ def download(version, model, region, out):
 @click.argument("infile")
 @click.argument("outfile")
 def decrypt4(version, model, region, infile, outfile):
+    decrypt4_function(version, model, region, infile, outfile)
+
+def decrypt4_function(version, model, region, infile, outfile):
     key = crypt.getv4key(version, model, region)
     print("Decrypting with key {}...".format(key.hex()))
     length = os.stat(infile).st_size
@@ -86,6 +93,21 @@ def decrypt4(version, model, region, infile, outfile):
             crypt.decrypt_progress(inf, outf, key, length)
     print("Done!")
 
+@cli.command(help="Download and decrypt enc4/enc2 files.")
+@click.argument("version")
+@click.argument("model")
+@click.argument("region")
+@click.argument("outfile", nargs = -1)
+def mkfw(version, model, region, outfile):
+    infile = download_function(version, model, region, ())
+    if outfile == ():
+        outfile = infile[:-5]
+    if infile[-1] == '4':
+        decrypt4_function(version, model, region, infile, outfile)
+    else:
+        decrypt2_function(version, model, region, infile, outfile)
+    os.remove(infile)
+
 @cli.command(help="Decrypt enc2 files.")
 @click.argument("version")
 @click.argument("model")
@@ -93,6 +115,9 @@ def decrypt4(version, model, region, infile, outfile):
 @click.argument("infile")
 @click.argument("outfile")
 def decrypt2(version, model, region, infile, outfile):
+    decrypt2_function(version, model, region, infile, outfile)
+
+def decrypt2_function(version, model, region, infile, outfile):
     key = crypt.getv2key(version, model, region)
     print("Decrypting with key {}...".format(key.hex()))
     length = os.stat(infile).st_size
