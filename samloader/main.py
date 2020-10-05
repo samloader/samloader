@@ -42,12 +42,14 @@ def checkupdate(model, region):
 @click.argument("version")
 @click.argument("model")
 @click.argument("region")
-@click.argument("out")
+@click.argument("out", nargs = -1)
 def download(version, model, region, out):
     client = fusclient.FUSClient()
     path, filename = getbinaryfile(client, version, region, model)
     initdownload(client, filename)
-    if os.path.isdir(out):
+    if out == ():
+        out = filename
+    elif os.path.isdir(out):
         out = os.path.join(out, filename)
     if os.path.exists(out):
         f = open(out, "ab")
