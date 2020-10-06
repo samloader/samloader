@@ -13,12 +13,22 @@ from . import fusclient
 from . import versionfetch
 
 def getbinaryfile(client, fw, region, model):
-    req = request.binaryinform(fw, region, model, client.nonce)
-    resp = client.makereq("NF_DownloadBinaryInform.do", req)
-    root = ET.fromstring(resp)
-    status = int(root.find("./FUSBody/Results/Status").text)
-    if status != 200:
-        raise Exception("DownloadBinaryInform returned {}, firmware could not be found?".format(status))
+    fw = fw.upper()
+    region = region.upper()
+    model = model.upper()
+
+    if model[0:3] != 'SM-':
+        model = 'SM-' + model
+    try:
+        req = request.binaryinform(fw, region, model, client.nonce)
+        resp = client.makereq("NF_DownloadBinaryInform.do", req)
+        root = ET.fromstring(resp)
+        status = int(root.find("./FUSBody/Results/Status").text)
+        if status != 200:
+            raise
+    except:
+        print("{} for {} in {} not found.".format(fw, model, region))
+        sys.exit(1)
     filename = root.find("./FUSBody/Put/BINARY_NAME/Data").text
     path = root.find("./FUSBody/Put/MODEL_PATH/Data").text
     return path, filename
@@ -35,7 +45,19 @@ def cli():
 @click.argument("model")
 @click.argument("region")
 def checkupdate(model, region):
-    fw = versionfetch.getlatestver(region, model)
+    checkupdate_function(model, region)
+
+def checkupdate_function(model, region):
+    region = region.upper()
+    model = model.upper()
+
+    if model[0:3] != 'SM-':
+        model = 'SM-' + model
+    try:
+        fw = versionfetch.getlatestver(region, model)
+    except:
+        print("Model {} not found in region {}.".format(model, region))
+        sys.exit(1)
     print(fw)
 
 @cli.command(help="Download the specified firmware version.")
@@ -83,6 +105,12 @@ def decrypt4(version, model, region, infile, outfile):
     decrypt4_function(version, model, region, infile, outfile)
 
 def decrypt4_function(version, model, region, infile, outfile):
+    region = region.upper()
+    model = model.upper()
+
+    if model[0:3] != 'SM-':
+        model = 'SM-' + model
+
     key = crypt.getv4key(version, model, region)
     print("Decrypting with key {}...".format(key.hex()))
     length = os.stat(infile).st_size
@@ -116,6 +144,12 @@ def decrypt2(version, model, region, infile, outfile):
     decrypt2_function(version, model, region, infile, outfile)
 
 def decrypt2_function(version, model, region, infile, outfile):
+    region = region.upper()
+    model = model.upper()
+
+    if model[0:3] != 'SM-':
+        model = 'SM-' + model
+
     key = crypt.getv2key(version, model, region)
     print("Decrypting with key {}...".format(key.hex()))
     length = os.stat(infile).st_size
