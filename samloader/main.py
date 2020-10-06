@@ -3,6 +3,7 @@
 
 import click
 import os
+import sys
 import base64
 import xml.etree.ElementTree as ET
 from clint.textui import progress
@@ -57,7 +58,11 @@ def download(version, model, region, out):
         f = open(out, "wb")
         start = 0
         print("Downloading {}".format(path+filename))
-    r = client.downloadfile(path+filename, start)
+    try:
+        r = client.downloadfile(path+filename, start)
+    except:
+        print("Cannot resume. Download complete? Try decrypting.")
+        sys.exit(1)
     length = int(r.headers["Content-Length"])
     if "Content-MD5" in r.headers:
         md5 = base64.b64decode(r.headers["Content-MD5"]).hex()
