@@ -7,11 +7,11 @@ pip3 install git+https://github.com/nlscc/samloader.git
 ## Usage
 See `samloader --help` and `samloader (command) --help`.
 
-`checkupdate`: Check the latest firmware version
+`-m <model> -r <region> checkupdate`: Check the latest firmware version
 
-`download`: Download the specified firmware version for a given phone and region to a specified file or directory
+`-m <model> -r <region> download -v <version> (-O <output-dir> or -o <output-file>)`: Download the specified firmware version for a given phone and region to a specified file or directory
 
-`decrypt`: Decrypt encrypted firmware
+`-m <model> -r <region> decrypt -v <version> -V <enc-version> -i <input-file> -o <output-file>`: Decrypt encrypted firmware
 ### Example
 ```
 $ samloader -m GT-I8190N -r BTU checkupdate
