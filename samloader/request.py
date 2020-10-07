@@ -11,7 +11,7 @@ def getlogiccheck(inp, nonce):
         out += inp[ord(c) & 0xf]
     return out
 
-def binaryinform(fw, region, model, nonce):
+def binaryinform(fw, model, region, nonce):
     fusmsg = ET.Element("FUSMsg")
     fushdr = ET.SubElement(fusmsg, "FUSHdr")
     ET.SubElement(fushdr, "ProtoVer").text = "1.0"

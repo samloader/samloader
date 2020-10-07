@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="samloader",
-    version="0.1",
+    version="0.2",
     author="nlscc",
     author_email="dontsendmailhere@example.com",
     description="A tool to download firmware for Samsung phones.",
@@ -20,11 +20,10 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "samloader = samloader.main:cli",
+            "samloader = samloader.main:main",
         ],
     },
     install_requires=[
-        "click",
         "clint",
         "pycryptodome",
         "requests"

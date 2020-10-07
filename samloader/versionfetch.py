@@ -6,7 +6,7 @@
 import xml.etree.ElementTree as ET
 import requests
 
-def getlatestver(region, model):
+def getlatestver(model, region):
     r = requests.get("https://fota-cloud-dn.ospserver.net/firmware/" + region + "/" + model + "/version.xml")
     r.raise_for_status()
     root = ET.fromstring(r.text)
