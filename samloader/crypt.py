@@ -16,7 +16,7 @@ unpad = lambda d: d[:-d[-1]]
 
 def getv4key(version, model, region):
     client = fusclient.FUSClient()
-    req = request.binaryinform(version, region, model, client.nonce)
+    req = request.binaryinform(version, model, region, client.nonce)
     resp = client.makereq("NF_DownloadBinaryInform.do", req)
     root = ET.fromstring(resp)
     logicval = root.find("./FUSBody/Put/LOGIC_VALUE_FACTORY/Data").text
