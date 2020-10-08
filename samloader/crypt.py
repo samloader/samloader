@@ -5,7 +5,7 @@
 
 import hashlib
 import xml.etree.ElementTree as ET
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from clint.textui import progress
 
 from . import request

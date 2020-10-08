@@ -25,7 +25,7 @@ setuptools.setup(
     },
     install_requires=[
         "clint",
-        "pycryptodome",
+        "pycryptodomex",
         "requests"
     ],
     python_requires='>=3.6',
