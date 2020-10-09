@@ -19,8 +19,9 @@ def getv4key(version, model, region):
     req = request.binaryinform(version, model, region, client.nonce)
     resp = client.makereq("NF_DownloadBinaryInform.do", req)
     root = ET.fromstring(resp)
+    fwver = root.find("./FUSBody/Results/LATEST_FW_VERSION/Data").text
     logicval = root.find("./FUSBody/Put/LOGIC_VALUE_FACTORY/Data").text
-    deckey = request.getlogiccheck(version, logicval)
+    deckey = request.getlogiccheck(fwver, logicval)
     return hashlib.md5(deckey.encode()).digest()
 
 def getv2key(version, model, region):
