@@ -46,7 +46,7 @@ def main():
         if args.show_md5 and "Content-MD5" in r.headers:
             print("MD5:", base64.b64decode(r.headers["Content-MD5"]).hex())
         # TODO: use own progress bar instead of clint
-        for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=(size/0x10000)+1):
+        for chunk in progress.bar(r.iter_content(chunk_size=0x10000), expected_size=((size-dloffset)/0x10000)+1):
             if chunk:
                 fd.write(chunk)
                 fd.flush()
