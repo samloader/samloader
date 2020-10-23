@@ -5,12 +5,57 @@ import argparse
 import os
 import base64
 import xml.etree.ElementTree as ET
+import time
+from requests.exceptions import HTTPError
+
 from clint.textui import progress
 
-from . import request
-from . import crypt
-from . import fusclient
-from . import versionfetch
+from samloader import crypt
+from samloader import fusclient
+from samloader import request
+from samloader import versionfetch
+
+csc_by_country = {
+    'USA': (
+        'ACG', 'ATT', 'BST', 'CCT', 'GCF', 'LRA', 'SPR', 'TFN', 'TMB', 'USC', 'VMU', 'VZW', 'XAA', 'XAS', 'AWS', 'DOB',
+        'CLW'
+    ),
+    'UK': (
+        'VIR', 'BTU', 'EVR', 'H3G', 'O2U', 'VOD', 'XEU'
+    )
+}
+
+
+def brute_force_by_csc(model: str, country: str, timeout: int = 1):
+    country = country.upper()
+    csc_list = csc_by_country.get(country, None)
+    if csc_list is None:
+        raise KeyError(f'Do not have list of possible csc for {country}')
+
+    results = ''
+    possible_combos = []
+    for csc in sorted(csc_list):
+        try:
+            results = versionfetch.get_latest_ver(model, csc)
+        except ValueError as err:
+            print(f'No firmware found for {country}, {csc} (err: {err})')
+            results = ''
+        except HTTPError as err:
+            print(f'Unable to find firmware for {country}, {csc} (err: {err.response})')
+            results = ''
+
+        if results:
+            print(f"Found firmware for country {country}, csc {csc}: {results}")
+            # Save for later
+            possible_combos.append(f"samloader -m {model} -r {csc} download -v {results} -O .")
+
+        # Limit our rates so we don't get banned; unsure if this is necessary
+        time.sleep(timeout)
+
+    print("Possible firmware download combinations:")
+    for _ in possible_combos:
+        print(_)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Download and query firmware for Samsung devices.")
@@ -25,6 +70,8 @@ def main():
     dload_out.add_argument("-O", "--out-dir", help="output the server filename to the specified directory")
     dload_out.add_argument("-o", "--out-file", help="output to the specified file")
     chkupd = subparsers.add_parser("checkupdate", help="check for the latest available firmware version")
+    chkupd.add_argument("-b", "--brute-force-by-country", help=f"check for firmware by country",
+                        choices=list(csc_by_country.keys()))
     decrypt = subparsers.add_parser("decrypt", help="decrypt an encrypted firmware")
     decrypt.add_argument("-v", "--fw-ver", help="encrypted firmware version", required=True)
     decrypt.add_argument("-V", "--enc-ver", type=int, choices=[2, 4], default=4, help="encryption version (default 4)")
@@ -52,7 +99,11 @@ def main():
                 fd.flush()
         fd.close()
     elif args.command == "checkupdate":
-        print(versionfetch.getlatestver(args.dev_model, args.dev_region))
+        if args.brute_force_by_country:
+            brute_force_by_csc(args.dev_model, country=args.brute_force_by_country)
+        else:
+            print(versionfetch.get_latest_ver(args.dev_model, args.dev_region))
+
     elif args.command == "decrypt":
         getkey = crypt.getv4key if args.enc_ver == 4 else crypt.getv2key
         key = getkey(args.fw_ver, args.dev_model, args.dev_region)
@@ -76,3 +127,7 @@ def getbinaryfile(client, fw, model, region):
     filename = root.find("./FUSBody/Put/BINARY_NAME/Data").text
     path = root.find("./FUSBody/Put/MODEL_PATH/Data").text
     return path, filename, size
+
+
+if __name__ == '__main__':
+    main()
