@@ -6,6 +6,8 @@
 import xml.etree.ElementTree as ET
 
 def getlogiccheck(inp, nonce):
+    if len(inp) < 16:
+        raise Exception("getlogiccheck() input too short")
     out = ""
     for c in nonce:
         out += inp[ord(c) & 0xf]
