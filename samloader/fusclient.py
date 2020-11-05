@@ -15,7 +15,8 @@ class FUSClient(object):
     def makereq(self, path, data=""):
         authv = 'FUS nonce="", signature="' + self.auth + '", nc="", type="", realm="", newauth="1"'
         r = requests.post("https://neofussvr.sslcs.cdngc.net/" + path, data=data,
-            headers={"Authorization": authv}, cookies={"JSESSIONID": self.sessid})
+            headers={"Authorization": authv, "User-Agent": "Kies2.0_FUS"},
+            cookies={"JSESSIONID": self.sessid})
         if "NONCE" in r.headers:
             self.encnonce = r.headers["NONCE"]
             self.nonce = auth.decryptnonce(self.encnonce)
@@ -26,7 +27,7 @@ class FUSClient(object):
         return r.text
     def downloadfile(self, filename, start=0):
         authv = 'FUS nonce="' + self.encnonce + '", signature="' + self.auth + '", nc="", type="", realm="", newauth="1"'
-        headers = {"Authorization": authv}
+        headers = {"Authorization": authv, "User-Agent": "Kies2.0_FUS"}
         if start > 0:
             headers["Range"] = "bytes={}-".format(start)
         r = requests.get("https://cloud-neofussvr.sslcs.cdngc.net/NF_DownloadBinaryForMass.do",
