@@ -30,7 +30,7 @@ class FUSClient(object):
         headers = {"Authorization": authv, "User-Agent": "Kies2.0_FUS"}
         if start > 0:
             headers["Range"] = "bytes={}-".format(start)
-        r = requests.get("https://cloud-neofussvr.sslcs.cdngc.net/NF_DownloadBinaryForMass.do",
+        r = requests.get("http://cloud-neofussvr.sslcs.cdngc.net/NF_DownloadBinaryForMass.do",
             params={"file": filename}, headers=headers, stream=True)
         r.raise_for_status()
         return r
