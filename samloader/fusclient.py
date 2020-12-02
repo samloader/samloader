@@ -31,6 +31,6 @@ class FUSClient(object):
         if start > 0:
             headers["Range"] = "bytes={}-".format(start)
         r = requests.get("http://cloud-neofussvr.sslcs.cdngc.net/NF_DownloadBinaryForMass.do",
-            params={"file": filename}, headers=headers, stream=True)
+            params="file=" + filename, headers=headers, stream=True)
         r.raise_for_status()
         return r
