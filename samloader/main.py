@@ -28,7 +28,7 @@ def main():
     chkupd = subparsers.add_parser("checkupdate", help="check for the latest available firmware version")
     decrypt = subparsers.add_parser("decrypt", help="decrypt an encrypted firmware")
     decrypt.add_argument("-v", "--fw-ver", help="encrypted firmware version", required=True)
-    decrypt.add_argument("-V", "--enc-ver", type=int, choices=[2, 4], default=4, help="encryption version (default 4)")
+    decrypt.add_argument("-V", "--enc-ver", type=int, choices=[2, 4], default=4, help="encryption version (default 4)", required=False)
     decrypt.add_argument("-i", "--in-file", help="encrypted firmware file input", required=True)
     decrypt.add_argument("-o", "--out-file", help="decrypted firmware file output", required=True)
     args = parser.parse_args()
@@ -69,7 +69,7 @@ def main():
     elif args.command == "checkupdate":
         print(versionfetch.getlatestver(args.dev_model, args.dev_region))
     elif args.command == "decrypt":
-        getkey = crypt.getv4key if args.enc_ver == 4 else crypt.getv2key
+        getkey = crypt.getv4key if getEncryptionVersion(args.in_file) == 4 else crypt.getv2key
         key = getkey(args.fw_ver, args.dev_model, args.dev_region)
         length = os.stat(args.in_file).st_size
         with open(args.in_file, "rb") as inf:
@@ -91,3 +91,8 @@ def getbinaryfile(client, fw, model, region):
     filename = root.find("./FUSBody/Put/BINARY_NAME/Data").text
     path = root.find("./FUSBody/Put/MODEL_PATH/Data").text
     return path, filename, size
+
+def getEncryptionVersion(file_name):
+    # Splits the filename and the extension // enc4 or enc2 is obtained
+    ext = file_name.split('.')[-1]
+    return 4 if ext == 'enc4' else 2
