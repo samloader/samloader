@@ -21,6 +21,7 @@ def main():
     dload.add_argument("-v", "--fw-ver", help="firmware version to download", required=True)
     dload.add_argument("-R", "--resume", help="resume an unfinished download", action="store_true")
     dload.add_argument("-M", "--show-md5", help="print the expected MD5 hash of the downloaded file", action="store_true")
+    dload.add_argument("-D", "--do-decrypt", help="auto-decrypt the downloaded file after downloading", action="store_true")
     dload_out = dload.add_mutually_exclusive_group(required=True)
     dload_out.add_argument("-O", "--out-dir", help="output the server filename to the specified directory")
     dload_out.add_argument("-o", "--out-file", help="output to the specified file")
@@ -51,6 +52,20 @@ def main():
                 fd.write(chunk)
                 fd.flush()
         fd.close()
+        if args.do_decrypt: # decrypt the file if needed
+            dec = out.replace(".enc4", "").replace(".enc2", "") # TODO: use a better way of doing this
+            if os.path.isfile(dec):
+                print("file {} already exists, refusing to auto-decrypt!")
+                return
+            print("decyrpting", out)
+            # TODO: remove code duplication with decrypt command
+            getkey = crypt.getv2key if filename.endswith(".enc2") else crypt.getenc4key
+            key = getkey(args.fw_ver, args.dev_model, args.dev_region)
+            length = os.stat(out).st_size
+            with open(out, "rb") as inf:
+                with open(dec, "wb") as outf:
+                    crypt.decrypt_progress(inf, outf, key, length)
+            os.remove(out)
     elif args.command == "checkupdate":
         print(versionfetch.getlatestver(args.dev_model, args.dev_region))
     elif args.command == "decrypt":
