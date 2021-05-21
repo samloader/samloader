@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 # Copyright (C) 2020 nlscc
 
-# Calculate keys and decrypt encrypted firmware packages.
+""" Calculate keys and decrypt encrypted firmware packages. """
 
 import hashlib
 import xml.etree.ElementTree as ET
@@ -10,11 +10,12 @@ from clint.textui import progress
 
 from . import request
 from . import fusclient
-from . import versionfetch
 
+# PKCS#7 unpad
 unpad = lambda d: d[:-d[-1]]
 
 def getv4key(version, model, region):
+    """ Retrieve the AES key for V4 encryption. """
     client = fusclient.FUSClient()
     req = request.binaryinform(version, model, region, client.nonce)
     resp = client.makereq("NF_DownloadBinaryInform.do", req)
@@ -25,12 +26,15 @@ def getv4key(version, model, region):
     return hashlib.md5(deckey.encode()).digest()
 
 def getv2key(version, model, region):
+    """ Calculate the AES key for V2 (legacy) encryption. """
     deckey = region + ":" + model + ":" + version
     return hashlib.md5(deckey.encode()).digest()
 
 def decrypt_progress(inf, outf, key, length):
+    """ Decrypt a stream of data while showing a progress bar. """
     cipher = AES.new(key, AES.MODE_ECB)
-    assert length % 16 == 0
+    if length % 16 != 0:
+        raise Exception("invalid input block size")
     chunks = length//4096+1
     for i in progress.bar(range(chunks)):
         block = inf.read(4096)

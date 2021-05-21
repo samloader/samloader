@@ -1,21 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0+
 # Copyright (C) 2020 nlscc
 
-# Get the latest firmware version for a device.
+""" Get the latest firmware version for a device. """
 
 import xml.etree.ElementTree as ET
 import requests
 
-def getlatestver(model, region):
-    r = requests.get("https://fota-cloud-dn.ospserver.net/firmware/" + region + "/" + model + "/version.xml")
-    r.raise_for_status()
-    root = ET.fromstring(r.text)
+def getlatestver(model: str, region: str) -> str:
+    """ Get the latest firmware version code for a model and region. """
+    req = requests.get("https://fota-cloud-dn.ospserver.net/firmware/" \
+        + region + "/" + model + "/version.xml")
+    req.raise_for_status()
+    root = ET.fromstring(req.text)
     vercode = root.find("./firmware/version/latest").text
     if vercode is None:
         raise Exception("No latest firmware found")
-    vc = vercode.split("/")
-    if len(vc) == 3:
-        vc.append(vc[0])
-    if vc[2] == "":
-        vc[2] = vc[0]
-    return "/".join(vc)
+    # Normalize retrieved version
+    ver = vercode.split("/")
+    if len(ver) == 3:
+        ver.append(ver[0])
+    if ver[2] == "":
+        ver[2] = ver[0]
+    return "/".join(ver)

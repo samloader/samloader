@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0+
 # Copyright (C) 2020 nlscc
 
-# Build FUS XML requests.
+""" Build FUS XML requests. """
 
 import xml.etree.ElementTree as ET
 
-def getlogiccheck(inp, nonce):
+def getlogiccheck(inp: str, nonce: str) -> str:
+    """ Calculate the request checksum for a given input and nonce. """
     if len(inp) < 16:
         raise Exception("getlogiccheck() input too short")
     out = ""
@@ -13,28 +14,42 @@ def getlogiccheck(inp, nonce):
         out += inp[ord(c) & 0xf]
     return out
 
-def binaryinform(fw, model, region, nonce):
-    fusmsg = ET.Element("FUSMsg")
+def build_reqhdr(fusmsg: ET.Element):
+    """ Build the FUSHdr of an XML message. """
     fushdr = ET.SubElement(fusmsg, "FUSHdr")
     ET.SubElement(fushdr, "ProtoVer").text = "1.0"
+
+def build_reqbody(fusmsg: ET.Element, params: dict):
+    """ Build the FUSBody of an XML message. """
     fusbody = ET.SubElement(fusmsg, "FUSBody")
     fput = ET.SubElement(fusbody, "Put")
-    ET.SubElement(ET.SubElement(fput, "ACCESS_MODE"), "Data").text = "2"
-    ET.SubElement(ET.SubElement(fput, "BINARY_NATURE"), "Data").text = "1"
-    ET.SubElement(ET.SubElement(fput, "CLIENT_PRODUCT"), "Data").text = "Smart Switch"
-    ET.SubElement(ET.SubElement(fput, "DEVICE_FW_VERSION"), "Data").text = fw
-    ET.SubElement(ET.SubElement(fput, "DEVICE_LOCAL_CODE"), "Data").text = region
-    ET.SubElement(ET.SubElement(fput, "DEVICE_MODEL_NAME"), "Data").text = model
-    ET.SubElement(ET.SubElement(fput, "LOGIC_CHECK"), "Data").text = getlogiccheck(fw, nonce)
+    for tag, value in params.items():
+        setag = ET.SubElement(fput, tag)
+        sedata = ET.SubElement(setag, "Data")
+        sedata.text = str(value)
+
+def binaryinform(fwv: str, model: str, region: str, nonce: str) -> str:
+    """ Build a BinaryInform request. """
+    fusmsg = ET.Element("FUSMsg")
+    build_reqhdr(fusmsg)
+    build_reqbody(fusmsg, {
+        "ACCESS_MODE": 2,
+        "BINARY_NATURE": 1,
+        "CLIENT_PRODUCT": "Smart Switch",
+        "DEVICE_FW_VERSION": fwv,
+        "DEVICE_LOCAL_CODE": region,
+        "DEVICE_MODEL_NAME": model,
+        "LOGIC_CHECK": getlogiccheck(fwv, nonce)
+    })
     return ET.tostring(fusmsg)
 
-def binaryinit(filename, nonce):
+def binaryinit(filename: str, nonce: str) -> str:
+    """ Build a BinaryInit request. """
     fusmsg = ET.Element("FUSMsg")
-    fushdr = ET.SubElement(fusmsg, "FUSHdr")
-    ET.SubElement(fushdr, "ProtoVer").text = "1.0"
-    fusbody = ET.SubElement(fusmsg, "FUSBody")
-    fput = ET.SubElement(fusbody, "Put")
-    ET.SubElement(ET.SubElement(fput, "BINARY_FILE_NAME"), "Data").text = filename
+    build_reqhdr(fusmsg)
     checkinp = filename.split(".")[0][-16:]
-    ET.SubElement(ET.SubElement(fput, "LOGIC_CHECK"), "Data").text = getlogiccheck(checkinp, nonce)
+    build_reqbody(fusmsg, {
+        "BINARY_FILE_NAME": filename,
+        "LOGIC_CHECK": getlogiccheck(checkinp, nonce)
+    })
     return ET.tostring(fusmsg)
