@@ -8,8 +8,9 @@ import xml.etree.ElementTree as ET
 from Cryptodome.Cipher import AES
 from clint.textui import progress
 
-from . import request
 from . import fusclient
+from . import request
+from . import versionfetch
 
 # PKCS#7 unpad
 unpad = lambda d: d[:-d[-1]]
@@ -17,6 +18,7 @@ unpad = lambda d: d[:-d[-1]]
 def getv4key(version, model, region):
     """ Retrieve the AES key for V4 encryption. """
     client = fusclient.FUSClient()
+    version = versionfetch.normalizevercode(version)
     req = request.binaryinform(version, model, region, client.nonce)
     resp = client.makereq("NF_DownloadBinaryInform.do", req)
     root = ET.fromstring(resp)
