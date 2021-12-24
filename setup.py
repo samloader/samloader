@@ -24,7 +24,7 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        "clint",
+        "tqdm",
         "pycryptodomex",
         "requests"
     ],
