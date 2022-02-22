@@ -19,9 +19,11 @@ def getlatestver(model: str, region: str) -> str:
     """ Get the latest firmware version code for a model and region. """
     req = requests.get("https://fota-cloud-dn.ospserver.net/firmware/" \
         + region + "/" + model + "/version.xml")
+    if req.status_code == 403:
+        raise Exception("Model or region not found (403)")
     req.raise_for_status()
     root = ET.fromstring(req.text)
     vercode = root.find("./firmware/version/latest").text
     if vercode is None:
-        raise Exception("No latest firmware found")
+        raise Exception("No latest firmware available")
     return normalizevercode(vercode)
