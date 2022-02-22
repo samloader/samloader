@@ -38,7 +38,8 @@ def decrypt_progress(inf, outf, key, length):
     if length % 16 != 0:
         raise Exception("invalid input block size")
     chunks = length//4096+1
-    for i in tqdm(range(chunks)):
+    pbar = tqdm(total=length, unit="B", unit_scale=True)
+    for i in range(chunks):
         block = inf.read(4096)
         if not block:
             break
@@ -47,3 +48,4 @@ def decrypt_progress(inf, outf, key, length):
             outf.write(unpad(decblock))
         else:
             outf.write(decblock)
+        pbar.update(4096)

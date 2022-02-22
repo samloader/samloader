@@ -46,10 +46,12 @@ def main():
         r = client.downloadfile(path+filename, dloffset)
         if args.show_md5 and "Content-MD5" in r.headers:
             print("MD5:", base64.b64decode(r.headers["Content-MD5"]).hex())
-        for chunk in tqdm(r.iter_content(chunk_size=0x10000), total=int((size-dloffset)/0x10000)+1):
+        pbar = tqdm(total=size, initial=dloffset, unit="B", unit_scale=True)
+        for chunk in r.iter_content(chunk_size=0x10000):
             if chunk:
                 fd.write(chunk)
                 fd.flush()
+                pbar.update(0x10000)
         fd.close()
         if args.do_decrypt: # decrypt the file if needed
             dec = out.replace(".enc4", "").replace(".enc2", "") # TODO: use a better way of doing this
