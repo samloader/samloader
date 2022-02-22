@@ -88,7 +88,9 @@ def getbinaryfile(client, fw, model, region):
     status = int(root.find("./FUSBody/Results/Status").text)
     if status != 200:
         raise Exception("DownloadBinaryInform returned {}, firmware could not be found?".format(status))
-    size = int(root.find("./FUSBody/Put/BINARY_BYTE_SIZE/Data").text)
     filename = root.find("./FUSBody/Put/BINARY_NAME/Data").text
+    if filename is None:
+        raise Exception("DownloadBinaryInform failed to find a firmware bundle")
+    size = int(root.find("./FUSBody/Put/BINARY_BYTE_SIZE/Data").text)
     path = root.find("./FUSBody/Put/MODEL_PATH/Data").text
     return path, filename, size
