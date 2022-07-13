@@ -58,24 +58,24 @@ def main():
             if os.path.isfile(dec):
                 print("file {} already exists, refusing to auto-decrypt!")
                 return
-            print("decyrpting", out)
-            # TODO: remove code duplication with decrypt command
-            getkey = crypt.getv2key if filename.endswith(".enc2") else crypt.getv4key
-            key = getkey(args.fw_ver, args.dev_model, args.dev_region)
-            length = os.stat(out).st_size
-            with open(out, "rb") as inf:
-                with open(dec, "wb") as outf:
-                    crypt.decrypt_progress(inf, outf, key, length)
+            print("decrypting", out)
+            version = 2 if filename.endswith(".enc2") else 4
+            decrypt_file(args, version, out, dec)
             os.remove(out)
+
     elif args.command == "checkupdate":
         print(versionfetch.getlatestver(args.dev_model, args.dev_region))
     elif args.command == "decrypt":
-        getkey = crypt.getv4key if args.enc_ver == 4 else crypt.getv2key
-        key = getkey(args.fw_ver, args.dev_model, args.dev_region)
-        length = os.stat(args.in_file).st_size
-        with open(args.in_file, "rb") as inf:
-            with open(args.out_file, "wb") as outf:
-                crypt.decrypt_progress(inf, outf, key, length)
+        decrypt_file(args, args.enc_ver, args.in_file, args.out_file)
+
+def decrypt_file(args, version, encrypted, decrypted):
+    if version not in [2, 4]:
+        raise Exception("Unknown encryption version: {}".format(version))
+    getkey = crypt.getv2key if version == 2 else crypt.getv4key
+    key = getkey(args.fw_ver, args.dev_model, args.dev_region)
+    length = os.stat(encrypted).st_size
+    with open(encrypted, "rb") as inf, open(decrypted, "wb") as outf:
+        crypt.decrypt_progress(inf, outf, key, length)
 
 def initdownload(client, filename):
     req = request.binaryinit(filename, client.nonce)
