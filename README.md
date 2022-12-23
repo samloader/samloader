@@ -1,5 +1,9 @@
 # samloader
 Download firmware for Samsung devices (without any extra Windows drivers).
+
+## Project is archived
+This project is no longer maintained. Please see [STATEMENT.pdf](STATEMENT.pdf).
+
 ## Installation
 ```
 pip3 install git+https://github.com/samloader/samloader.git
